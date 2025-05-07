@@ -1,0 +1,99 @@
+:root {
+	--background: #000;
+	--highlight: #ffffff21;
+	--text: #fff;
+	--button-size: 5rem;
+}
+
+* {
+	margin: 0;	
+}
+
+body {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	height: 100vh;
+}
+
+#mainContainer {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+}
+
+#leftContainer, #rightContainer {
+	flex-grow: 1;
+	display: flex;
+	font-size: 24pt;
+	width: 20rem;
+	height: 100vh;
+}
+
+#leftContainer {
+	flex-direction: column;
+	justify-content: center;
+	padding-bottom: 8rem;
+	padding-left: 4rem;
+}
+
+#rightContainer {
+	justify-content: right;
+	padding-top: 5rem;
+	padding-right: 3rem;
+}
+
+#canvas {
+
+}
+
+#timer {
+	font-size: 32pt;
+}
+
+#buttonContainer {
+}
+
+button {
+	width: var(--button-size);
+	height: var(--button-size);
+}
+
+i {
+	font-size: 32pt;
+}
+
+#topButtons {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#bottomButtons {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#settingsButton {
+	border-radius: 2.5rem;
+}
+
+.wrong {
+	background-color: #f00;
+}
+
+.wrong:hover {
+	background-color: #f00;
+}
+
+.hidden {
+	display: none;
+}
+
+.form-switch .form-check-input {
+	transform: scale(1.8) translateX(10px);
+	margin-right: 3rem;
+}
