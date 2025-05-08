@@ -1,7 +1,5 @@
-const noteHeadSize = 20
-const lineThickness = 5;
-const stemThickness = 10;
-const stemHeight = 170;
+import { drawStaff, drawNoteHead, drawNote, drawChord, clearCanvas } from './render.js';
+
 let currentNoteIndex;
 let mode;
 
@@ -13,19 +11,14 @@ let questionsCompleted = 0;
 let guesses = 0;
 let accuracy = 1;
 
+
 let optionEnabled = [true, true, true, true];
+let currentChord = [];
+let currentChordGuess = [];
 
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
 const modes = ['note', 'chord'];
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-const toScreen = (y) => {
-	const y0 = canvas.width/2;
-	return y*(noteHeadSize+lineThickness) + y0; 
-}
 
 const mod = (n, m) => {
 	return ((n % m) + m) % m;
@@ -51,50 +44,17 @@ const initializeToggles = () => {
 	}
 }
 
-const drawStaff = () => {
-	ctx.beginPath();
-	ctx.strokeStyle = '#000';
-	ctx.lineWidth = lineThickness;
-	const y0 = canvas.width/2 - 4*(noteHeadSize+lineThickness);
-	for(let i=0; i<5; i++) {
-		const y = 2*i*(noteHeadSize+lineThickness) + y0;
-		ctx.moveTo(0, y);
-		ctx.lineTo(canvas.width, y);
-		ctx.stroke();
-	}
-}
-
-const drawNoteHead = (y) => {
-	const screenY = toScreen(y);
-	ctx.beginPath();
-	ctx.ellipse(canvas.width/2, screenY, noteHeadSize, 3 * noteHeadSize / 2, 2 * Math.PI / 6, 0, Math.PI * 2);
-	ctx.fillStyle = '#000';
-	ctx.fill();
-}
-
-const drawNote = (y) => {
-	const screenY = toScreen(y)-3;
-	const screenX = canvas.width/2 + noteHeadSize + 2.5;
-	drawNoteHead(y);
-	ctx.beginPath();
-	ctx.strokeStyle = '#000';
-	ctx.lineWidth = stemThickness;
-	ctx.moveTo(screenX, screenY);
-	ctx.lineTo(screenX, screenY-stemHeight);
-	ctx.stroke();
-}
-
-const drawChord = (notes) => {
-	for(const y of notes) {
-		drawNote(y);
-	}
-}
-
-const pickRandomNote = () => {
+const pickRandomNote = (previous) => {
 	let candidate = Math.floor(Math.random() * 11) - 5;
-	while(candidate === currentNoteIndex)
+	while(candidate === previous)
 		candidate = Math.floor(Math.random() * 11) - 5;
 	return candidate;
+}
+
+const pickRandomChord = (previous) => {
+	currentNoteIndex = pickRandomNote(previous);
+	const root = currentNoteIndex;
+	return [root, root+2, root+4];
 }
 
 const getButtonRefs = () => {
@@ -155,29 +115,36 @@ const updateAccuracy = () => {
 
 const handleGuess = (guess) => {
 	const button = document.getElementById(`${guess}Button`);
-	if(guess === indexToNote(currentNoteIndex)) {
-		currentNoteIndex = pickRandomNote();
-		renderCall();
-		resetButtons();
-		questionsCompleted++;
-		updateQuestionsCompleted();
-		timeSpent = 0;
+	switch(mode) {
+		case 'note':
+			if(guess === indexToNote(currentNoteIndex)) {
+				currentNoteIndex = pickRandomNote(currentNoteIndex);
+				renderCall();
+				resetButtons();
+				questionsCompleted++;
+				updateQuestionsCompleted();
+				timeSpent = 0;
 
-		streak++;
-		if(streak > longestStreak)
-			updateLongestStreak();
+				streak++;
+				if(streak > longestStreak)
+					updateLongestStreak();
 
-		button.classList.add('btn-secondary');
-		button.classList.remove('btn-danger');
+				button.classList.add('btn-secondary');
+				button.classList.remove('btn-danger');
+			}
+			else {
+				button.classList.add('btn-danger');
+				button.classList.remove('btn-secondary');
+				streak = 0;
+			}
+			updateStreak();
+			guesses++;
+			updateAccuracy();
+			break;
+		case 'chord':
+
+			break;
 	}
-	else {
-		button.classList.add('btn-danger');
-		button.classList.remove('btn-secondary');
-		streak = 0;
-	}
-	updateStreak();
-	guesses++;
-	updateAccuracy();
 }
 
 const updateCall = () => {
@@ -189,10 +156,15 @@ const updateCall = () => {
 }
 
 const renderCall = () => {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	clearCanvas();
 	drawStaff();
-	drawNote(currentNoteIndex);
+
+	if(mode === 'note')
+		drawNote(currentNoteIndex);
+	else if(mode === 'chord')
+		drawChord(currentChord);
 }
+
 
 const timerInterval = setInterval(() => {
 	timeSpent += 0.01;
@@ -203,11 +175,24 @@ const timerInterval = setInterval(() => {
 const modeDropdown = document.getElementById('dropdown');
 modeDropdown.addEventListener('change', () => {
 	mode = modes[modeDropdown.value-1];
+	switch(mode) {
+		case 'note':
+			currentNoteIndex = pickRandomNote(currentNoteIndex);
+			break;
+		case 'chord':
+			currentChord = pickRandomChord(currentNoteIndex);
+			break;
+	}
+	renderCall();
 });
 mode = modes[modeDropdown.value-1];
 
 const buttonRefs = getButtonRefs();
-currentNoteIndex = pickRandomNote();
+
+if(mode === 'note')
+	currentNoteIndex = pickRandomNote(currentNoteIndex);
+else if(mode === 'chord')
+	currentChord = pickRandomChord(currentNoteIndex);
 
 const optionRefs = getOptionRefs();
 
