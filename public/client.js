@@ -73,6 +73,18 @@ const resetButtons = () => {
 	}
 }
 
+const resetOptions = () => {
+	PARAMS.setStreak(0);
+	PARAMS.setLongestStreak(0);
+	PARAMS.setTimeSpent(0);
+	PARAMS.setTotalTime(0);
+	PARAMS.setQuestionsCompleted(0);
+	PARAMS.setGuesses(0);
+	PARAMS.setAccuracy(1);
+
+	updateCall();
+}
+
 const handleGuess = (guess) => {
 	const button = document.getElementById(`${guess}Button`);
 	switch(mode) {
@@ -177,6 +189,8 @@ modeDropdown.addEventListener('change', () => {
 			break;
 	}
 	renderCall();
+	resetButtons();
+	resetOptions();
 });
 mode = modes[modeDropdown.value-1];
 
