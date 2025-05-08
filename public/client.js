@@ -3,12 +3,13 @@ import { updateStreak, updateTimers, updateQuestionsCompleted, updateLongestStre
 import { indexToNote } from './util.js';
 import * as PARAMS from './params.js';
 
-let currentNoteIndex;
+let currentNoteIndex = 0;
 let mode;
 
 let optionEnabled = [true, true, true, true];
-let currentChord = [];
-let currentChordGuess = [];
+let currentChord;
+let currentChordIndices;
+let currentChordGuess = new Set();
 
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
@@ -37,9 +38,13 @@ const pickRandomNote = (previous) => {
 }
 
 const pickRandomChord = (previous) => {
-	currentNoteIndex = pickRandomNote(previous);
-	const root = currentNoteIndex;
-	return [root, root+2, root+4];
+	let candidate = Math.floor(Math.random() * 4);
+	while(candidate === previous)
+		candidate = Math.floor(Math.random() * 4);
+	currentNoteIndex = candidate;
+	const root = candidate;
+	currentChordIndices = [root, root-2, root-4];
+	currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
 }
 
 const getButtonRefs = () => {
@@ -62,7 +67,9 @@ const getOptionRefs = () => {
 const resetButtons = () => {
 	for(const button of buttonRefs) {
 		button.classList.add('btn-secondary');
+		button.classList.remove('btn-primary');
 		button.classList.remove('btn-danger');
+		button.disabled = false;
 	}
 }
 
@@ -89,26 +96,48 @@ const handleGuess = (guess) => {
 			else {
 				button.classList.add('btn-danger');
 				button.classList.remove('btn-secondary');
+				button.disabled = true;
 				PARAMS.setStreak(0);
 			}
-			updateStreak();
-			PARAMS.setGuesses(PARAMS.getGuesses()+1);
-			updateAccuracy();
 			break;
 		case 'chord':
-			let correct = false;
-			for(const ix in currentChord) {
-				if(indexToNote(ix) === guess) {
-					correct = true;
+			if(currentChord.has(guess)) {
+				button.classList.add('btn-primary');
+				button.classList.remove('btn-secondary');
+
+				currentChordGuess.add(guess);
+
+				const currentStreak = PARAMS.getStreak();
+				PARAMS.setStreak(currentStreak+1);
+				if(currentStreak+1 > PARAMS.getLongestStreak())
+					updateLongestStreak();
+
+				PARAMS.setQuestionsCompleted(PARAMS.getQuestionsCompleted()+1);
+				updateQuestionsCompleted();
+				
+				if(currentChord.size === currentChordGuess.size && [...currentChord].every(x => currentChordGuess.has(x))) {
+					resetButtons();
+					currentChordGuess = new Set();
+					pickRandomChord(currentNoteIndex);
+					updateStreak();
+
+					renderCall();
 					break;
 				}
 			}
-			if(correct) {
-				const clickedButton = document.getElementById(`${guess}Button`);
-				clickedButton.backgroundColor = '#00f';
+			else {
+				button.classList.add('btn-danger');
+				button.classList.remove('btn-secondary');
+
+				PARAMS.setStreak(0);
 			}
+
+			button.disabled = true;
 			break;
 	}
+	updateStreak();
+	PARAMS.setGuesses(PARAMS.getGuesses()+1);
+	updateAccuracy();
 }
 
 const updateCall = () => {
@@ -126,7 +155,7 @@ const renderCall = () => {
 	if(mode === 'note')
 		drawNote(currentNoteIndex);
 	else if(mode === 'chord')
-		drawChord(currentChord);
+		drawChord(currentChordIndices);
 }
 
 
@@ -144,7 +173,7 @@ modeDropdown.addEventListener('change', () => {
 			currentNoteIndex = pickRandomNote(currentNoteIndex);
 			break;
 		case 'chord':
-			currentChord = pickRandomChord(currentNoteIndex);
+			pickRandomChord(currentNoteIndex);
 			break;
 	}
 	renderCall();
@@ -156,7 +185,7 @@ const buttonRefs = getButtonRefs();
 if(mode === 'note')
 	currentNoteIndex = pickRandomNote(currentNoteIndex);
 else if(mode === 'chord')
-	currentChord = pickRandomChord(currentNoteIndex);
+	pickRandomChord(currentNoteIndex);
 
 const optionRefs = getOptionRefs();
 
