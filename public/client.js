@@ -3,16 +3,21 @@ const lineThickness = 5;
 const stemThickness = 10;
 const stemHeight = 170;
 let currentNoteIndex;
+let mode;
+
 let streak = 0;
 let longestStreak = 0;
 let timeSpent = 0;
 let totalTime = 0;
 let questionsCompleted = 0;
-let modalDisplayed = false;
+let guesses = 0;
+let accuracy = 1;
+
 let optionEnabled = [true, true, true, true];
 
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted'];
+const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
+const modes = ['note', 'chord'];
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -142,6 +147,12 @@ const updateLongestStreak = () => {
 	display.innerText = `Longest streak: ${longestStreak}`;
 }
 
+const updateAccuracy = () => {
+	accuracy = !guesses ? Number(1).toFixed(2) : (questionsCompleted / guesses).toFixed(2);
+	const display = document.getElementById('accuracy');
+	display.innerText = `Accuracy: ${accuracy}`;
+}
+
 const handleGuess = (guess) => {
 	const button = document.getElementById(`${guess}Button`);
 	if(guess === indexToNote(currentNoteIndex)) {
@@ -165,6 +176,8 @@ const handleGuess = (guess) => {
 		streak = 0;
 	}
 	updateStreak();
+	guesses++;
+	updateAccuracy();
 }
 
 const updateCall = () => {
@@ -172,6 +185,7 @@ const updateCall = () => {
 	updateLongestStreak();
 	updateTimers();
 	updateQuestionsCompleted();
+	updateAccuracy();
 }
 
 const renderCall = () => {
@@ -185,6 +199,12 @@ const timerInterval = setInterval(() => {
 	totalTime += 0.01;
 	updateTimers();
 }, 10);
+
+const modeDropdown = document.getElementById('dropdown');
+modeDropdown.addEventListener('change', () => {
+	mode = modes[modeDropdown.value-1];
+});
+mode = modes[modeDropdown.value-1];
 
 const buttonRefs = getButtonRefs();
 currentNoteIndex = pickRandomNote();

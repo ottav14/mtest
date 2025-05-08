@@ -7,6 +7,8 @@
 
 * {
 	margin: 0;	
+	font-family: "Nunito", sans-serif;
+	font-weight: bold;
 }
 
 body {
@@ -35,25 +37,18 @@ body {
 #leftContainer {
 	flex-direction: column;
 	justify-content: center;
+	align-items: center;
 	padding-bottom: 8rem;
-	padding-left: 4rem;
 }
 
 #rightContainer {
 	justify-content: right;
-	padding-top: 5rem;
-	padding-right: 3rem;
-}
-
-#canvas {
-
+	padding-top: 1rem;
+	padding-right: 1rem;
 }
 
 #timer {
 	font-size: 32pt;
-}
-
-#buttonContainer {
 }
 
 button {
@@ -96,4 +91,28 @@ i {
 .form-switch .form-check-input {
 	transform: scale(1.8) translateX(10px);
 	margin-right: 3rem;
+}
+
+.modal-body {
+	display: flex;
+	justify-content: space-around;
+	align-items: top;
+}
+
+.dropdown-toggle {
+	width: 10rem;
+	height: 3rem;
+	background-color: #000;
+}
+
+.dropdown-button {
+	background-color: #fff;
+}
+
+#optionContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: top;
+	justify-content: top;
+	height: 20rem;
 }
