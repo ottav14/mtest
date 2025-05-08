@@ -1,16 +1,9 @@
 import { drawStaff, drawNoteHead, drawNote, drawChord, clearCanvas } from './render.js';
+import { updateStreak, updateTimers, updateQuestionsCompleted, updateLongestStreak, updateAccuracy } from './optionUpdaters.js';
+import * as PARAMS from './params.js';
 
 let currentNoteIndex;
 let mode;
-
-let streak = 0;
-let longestStreak = 0;
-let timeSpent = 0;
-let totalTime = 0;
-let questionsCompleted = 0;
-let guesses = 0;
-let accuracy = 1;
-
 
 let optionEnabled = [true, true, true, true];
 let currentChord = [];
@@ -81,38 +74,6 @@ const resetButtons = () => {
 	}
 }
 
-const updateStreak = () => {
-	const streakDisplay = document.getElementById('streak');
-	streakDisplay.innerText = `Streak: ${streak}`;
-}
-
-const updateTimers = () => {
-	const timer = document.getElementById('timer');
-	timer.innerText = timeSpent.toFixed(2);
-
-	const averageTimeDisplay = document.getElementById('averageTime');
-	let averageTime = questionsCompleted ? totalTime / questionsCompleted : 0;
-	averageTime = averageTime.toFixed(2);
-	averageTimeDisplay.innerText = `Average time: ${averageTime}`;
-}
-
-const updateQuestionsCompleted = () => {
-	const display = document.getElementById('questionsCompleted');
-	display.innerText = `Questions completed: ${questionsCompleted}`;
-}
-
-const updateLongestStreak = () => {
-	longestStreak = streak;
-	const display = document.getElementById('longestStreak');
-	display.innerText = `Longest streak: ${longestStreak}`;
-}
-
-const updateAccuracy = () => {
-	accuracy = !guesses ? Number(1).toFixed(2) : (questionsCompleted / guesses).toFixed(2);
-	const display = document.getElementById('accuracy');
-	display.innerText = `Accuracy: ${accuracy}`;
-}
-
 const handleGuess = (guess) => {
 	const button = document.getElementById(`${guess}Button`);
 	switch(mode) {
@@ -123,7 +84,7 @@ const handleGuess = (guess) => {
 				resetButtons();
 				questionsCompleted++;
 				updateQuestionsCompleted();
-				timeSpent = 0;
+				PARAMS.setTimeSpent(0);
 
 				streak++;
 				if(streak > longestStreak)
@@ -138,7 +99,7 @@ const handleGuess = (guess) => {
 				streak = 0;
 			}
 			updateStreak();
-			guesses++;
+			PARAMS.setGuesses(PARAMS.getGuesses()+1);
 			updateAccuracy();
 			break;
 		case 'chord':
@@ -167,8 +128,8 @@ const renderCall = () => {
 
 
 const timerInterval = setInterval(() => {
-	timeSpent += 0.01;
-	totalTime += 0.01;
+	PARAMS.setTimeSpent(PARAMS.getTimeSpent()+0.01);
+	PARAMS.setTotalTime(PARAMS.getTotalTime()+0.01);
 	updateTimers();
 }, 10);
 
