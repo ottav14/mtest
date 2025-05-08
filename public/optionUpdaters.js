@@ -29,12 +29,13 @@ export const updateLongestStreak = () => {
 	const streak = PARAMS.getStreak();
 	const display = document.getElementById('longestStreak');
 	PARAMS.setLongestStreak(Math.max(longestStreak, streak));
-	display.innerText = `Longest streak: ${longestStreak}`;
+	display.innerText = `Longest streak: ${PARAMS.getLongestStreak()}`;
 }
 
 export const updateAccuracy = () => {
 	const guesses = PARAMS.getGuesses();
-	if(guesses)
+	const questionsCompleted = PARAMS.getQuestionsCompleted();
+	if(!guesses)
 		PARAMS.setAccuracy(Number(1).toFixed(2));
 	else
 		PARAMS.setAccuracy((questionsCompleted / guesses).toFixed(2));

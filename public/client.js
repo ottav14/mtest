@@ -1,5 +1,6 @@
 import { drawStaff, drawNoteHead, drawNote, drawChord, clearCanvas } from './render.js';
 import { updateStreak, updateTimers, updateQuestionsCompleted, updateLongestStreak, updateAccuracy } from './optionUpdaters.js';
+import { indexToNote } from './util.js';
 import * as PARAMS from './params.js';
 
 let currentNoteIndex;
@@ -12,15 +13,6 @@ let currentChordGuess = [];
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
 const modes = ['note', 'chord'];
-
-const mod = (n, m) => {
-	return ((n % m) + m) % m;
-}
-
-const indexToNote = (ix) => {
-	const table = ['b', 'a', 'g', 'f', 'e', 'd', 'c'];
-	return table[mod(ix, 7)];
-}
 
 const initializeToggles = () => {
 	for(let i=0; i<optionNames.length; i++) {
@@ -82,12 +74,13 @@ const handleGuess = (guess) => {
 				currentNoteIndex = pickRandomNote(currentNoteIndex);
 				renderCall();
 				resetButtons();
-				questionsCompleted++;
+				PARAMS.setQuestionsCompleted(PARAMS.getQuestionsCompleted()+1);
 				updateQuestionsCompleted();
 				PARAMS.setTimeSpent(0);
 
-				streak++;
-				if(streak > longestStreak)
+				const currentStreak = PARAMS.getStreak();
+				PARAMS.setStreak(currentStreak+1);
+				if(currentStreak+1 > PARAMS.getLongestStreak())
 					updateLongestStreak();
 
 				button.classList.add('btn-secondary');
@@ -96,14 +89,24 @@ const handleGuess = (guess) => {
 			else {
 				button.classList.add('btn-danger');
 				button.classList.remove('btn-secondary');
-				streak = 0;
+				PARAMS.setStreak(0);
 			}
 			updateStreak();
 			PARAMS.setGuesses(PARAMS.getGuesses()+1);
 			updateAccuracy();
 			break;
 		case 'chord':
-
+			let correct = false;
+			for(const ix in currentChord) {
+				if(indexToNote(ix) === guess) {
+					correct = true;
+					break;
+				}
+			}
+			if(correct) {
+				const clickedButton = document.getElementById(`${guess}Button`);
+				clickedButton.backgroundColor = '#00f';
+			}
 			break;
 	}
 }

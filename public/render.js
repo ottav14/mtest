@@ -1,5 +1,5 @@
 import { noteHeadSize, lineThickness, stemThickness, stemHeight } from './params.js';
-import { toScreen } from './util.js';
+import { toScreen, indexToNote } from './util.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
