@@ -28,6 +28,11 @@ const initializeToggles = () => {
 				optionRefs[i].classList.add('hidden');
 		});
 	}
+	
+	if(mode === 'note') {
+		const inversionToggleContainer = document.getElementById('inversionToggleContainer');
+		inversionToggleContainer.style.display = 'none';
+	}
 }
 
 const pickRandomNote = (previous) => {
@@ -170,6 +175,17 @@ const renderCall = () => {
 		drawChord(currentChordIndices);
 }
 
+const initNoteMode = () => {
+	currentNoteIndex = pickRandomNote(currentNoteIndex);
+	const inversionToggleContainer = document.getElementById('inversionToggleContainer');
+	inversionToggleContainer.style.display = 'none';
+}
+
+const initChordMode = () => {
+	pickRandomChord(currentNoteIndex);
+	const inversionToggleContainer = document.getElementById('inversionToggleContainer');
+	inversionToggleContainer.style.display = 'block';
+}
 
 const timerInterval = setInterval(() => {
 	PARAMS.setTimeSpent(PARAMS.getTimeSpent()+0.01);
@@ -182,10 +198,10 @@ modeDropdown.addEventListener('change', () => {
 	mode = modes[modeDropdown.value-1];
 	switch(mode) {
 		case 'note':
-			currentNoteIndex = pickRandomNote(currentNoteIndex);
+			initNoteMode();
 			break;
 		case 'chord':
-			pickRandomChord(currentNoteIndex);
+			initChordMode();
 			break;
 	}
 	renderCall();
@@ -193,13 +209,14 @@ modeDropdown.addEventListener('change', () => {
 	resetOptions();
 });
 mode = modes[modeDropdown.value-1];
+console.log(mode);
 
 const buttonRefs = getButtonRefs();
 
 if(mode === 'note')
-	currentNoteIndex = pickRandomNote(currentNoteIndex);
+	initNoteMode();
 else if(mode === 'chord')
-	pickRandomChord(currentNoteIndex);
+	initChordMode();
 
 const optionRefs = getOptionRefs();
 
