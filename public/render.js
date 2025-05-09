@@ -36,11 +36,25 @@ export const drawNote = (y) => {
 	drawNoteHead(y);
 	ctx.lineWidth = PARAMS.stemThickness;
 	drawLine(screenX, screenY, screenX, screenY-PARAMS.stemHeight);
+
+	if(y <= -6 || y >= 6) { 
+		const parity = y < 0 ? -1 : 1;
+		const ledgerCount = Math.floor((y - parity*4)/(parity*2));
+		const y0 = canvas.width/2 + parity*6*(PARAMS.noteHeadSize+PARAMS.lineThickness);
+		for(let i=0; i<ledgerCount; i++) {
+			const y = y0 + parity*2*i*(PARAMS.noteHeadSize+PARAMS.lineThickness);
+			const mid = canvas.width/2;
+			const ledgerWidth = 80;
+			ctx.lineWidth = PARAMS.lineThickness;
+			drawLine(mid+ledgerWidth/2, y, mid-ledgerWidth/2, y);
+		}
+	}
 }
 
 export const drawChord = (notes) => {
-	for(const y of notes) 
+	for(const y of notes) {
 		drawNote(y);
+	}
 }
 
 export const clearCanvas = () => {

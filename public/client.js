@@ -41,41 +41,46 @@ const initializeOptions = () => {
 
 	const inversionToggle = document.getElementById('inversionToggle');
 	inversionToggle.addEventListener('change', handleInversionToggle);
+	inversionsEnabled = inversionToggle.checked;
 
 }
 
+const randRange = (min, max) => {
+	return Math.floor(Math.random() * (max-min)) + min;
+}
+
 const pickRandomNote = (previous) => {
-	let candidate = Math.floor(Math.random() * 11) - 5;
+	let candidate = randRange(-9, 9);
 	while(candidate === previous)
-		candidate = Math.floor(Math.random() * 11) - 5;
+		candidate = randRange(-9, 9);
 	return candidate;
 }
 
 const pickRandomChord = (previous) => {
-	let candidate = Math.floor(Math.random() * 4);
+	let candidate = randRange(-4, 9);
 	while(candidate === previous)
-		candidate = Math.floor(Math.random() * 4);
+		candidate = randRange(-4, 9);
 	currentNoteIndex = candidate;
-	const root = candidate;
+	const bass = candidate;
 
 	if(!inversionsEnabled) {
-		currentChordIndices = [root, root-2, root-4];
-		currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
+		currentChordIndices = [bass, bass-2, bass-4];
+		currentChord = new Set([indexToNote(bass), indexToNote(bass-2), indexToNote(bass-4)]);
 	}
 	else {
 		const inversionType = Math.floor(Math.random() * 3);
 		switch(inversionType) {
 			case 0:
-				currentChordIndices = [root, root-2, root-4];
-				currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
+				currentChordIndices = [bass, bass-2, bass-4];
+				currentChord = new Set([indexToNote(bass), indexToNote(bass-2), indexToNote(bass-4)]);
 				break;
 			case 1:
-				currentChordIndices = [root+5, root+3, root];
-				currentChord = new Set([indexToNote(root+5), indexToNote(root+3), indexToNote(root)]);
+				currentChordIndices = [bass, bass-2, bass-5];
+				currentChord = new Set([indexToNote(bass), indexToNote(bass-2), indexToNote(bass-5)]);
 				break;
 			case 2:
-				currentChordIndices = [root+3, root, root-2];
-				currentChord = new Set([indexToNote(root+3), indexToNote(root), indexToNote(root-2)]);
+				currentChordIndices = [bass, bass-3, bass-5];
+				currentChord = new Set([indexToNote(bass), indexToNote(bass-3), indexToNote(bass-5)]);
 				break;
 		}
 	}
@@ -247,13 +252,15 @@ const buttonRefs = getButtonRefs();
 
 mode = modes[document.getElementById('dropdown').value-1];
 
+const optionRefs = getOptionRefs();
+
+initializeOptions();
+
 if(mode === 'note')
 	initNoteMode();
 else if(mode === 'chord')
 	initChordMode();
 
-const optionRefs = getOptionRefs();
 
-initializeOptions();
 updateCall();
 renderCall();
