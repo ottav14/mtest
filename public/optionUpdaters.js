@@ -36,8 +36,6 @@ export const updateAccuracy = () => {
 	const guesses = PARAMS.getGuesses();
 	const questionsCompleted = PARAMS.getQuestionsCompleted();
 
-	console.log(guesses, questionsCompleted);
-
 	if(!guesses)
 		PARAMS.setAccuracy(Number(1).toFixed(2));
 	else

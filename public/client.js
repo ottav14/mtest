@@ -10,12 +10,13 @@ let optionEnabled = [true, true, true, true];
 let currentChord;
 let currentChordIndices;
 let currentChordGuess = new Set();
+let inversionsEnabled = false;
 
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
 const modes = ['note', 'chord'];
 
-const initializeToggles = () => {
+const initializeOptions = () => {
 	for(let i=0; i<optionNames.length; i++) {
 		const name = optionNames[i];
 		const toggle = document.getElementById(`${name}Toggle`);
@@ -33,6 +34,14 @@ const initializeToggles = () => {
 		const inversionToggleContainer = document.getElementById('inversionToggleContainer');
 		inversionToggleContainer.style.display = 'none';
 	}
+
+	const modeDropdown = document.getElementById('dropdown');
+	modeDropdown.addEventListener('change', handleModeChange);
+	mode = modes[modeDropdown.value-1];
+
+	const inversionToggle = document.getElementById('inversionToggle');
+	inversionToggle.addEventListener('change', handleInversionToggle);
+
 }
 
 const pickRandomNote = (previous) => {
@@ -48,8 +57,28 @@ const pickRandomChord = (previous) => {
 		candidate = Math.floor(Math.random() * 4);
 	currentNoteIndex = candidate;
 	const root = candidate;
-	currentChordIndices = [root, root-2, root-4];
-	currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
+
+	if(!inversionsEnabled) {
+		currentChordIndices = [root, root-2, root-4];
+		currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
+	}
+	else {
+		const inversionType = Math.floor(Math.random() * 3);
+		switch(inversionType) {
+			case 0:
+				currentChordIndices = [root, root-2, root-4];
+				currentChord = new Set([indexToNote(root), indexToNote(root-2), indexToNote(root-4)]);
+				break;
+			case 1:
+				currentChordIndices = [root+5, root+3, root];
+				currentChord = new Set([indexToNote(root+5), indexToNote(root+3), indexToNote(root)]);
+				break;
+			case 2:
+				currentChordIndices = [root+3, root, root-2];
+				currentChord = new Set([indexToNote(root+3), indexToNote(root), indexToNote(root-2)]);
+				break;
+		}
+	}
 }
 
 const getButtonRefs = () => {
@@ -187,14 +216,8 @@ const initChordMode = () => {
 	inversionToggleContainer.style.display = 'block';
 }
 
-const timerInterval = setInterval(() => {
-	PARAMS.setTimeSpent(PARAMS.getTimeSpent()+0.01);
-	PARAMS.setTotalTime(PARAMS.getTotalTime()+0.01);
-	updateTimers();
-}, 10);
-
-const modeDropdown = document.getElementById('dropdown');
-modeDropdown.addEventListener('change', () => {
+const handleModeChange = () => {
+	const modeDropdown = document.getElementById('dropdown');
 	mode = modes[modeDropdown.value-1];
 	switch(mode) {
 		case 'note':
@@ -207,11 +230,22 @@ modeDropdown.addEventListener('change', () => {
 	renderCall();
 	resetButtons();
 	resetOptions();
-});
-mode = modes[modeDropdown.value-1];
-console.log(mode);
+}
+
+const handleInversionToggle = () => {
+	const toggle = document.getElementById('inversionToggle');
+	inversionsEnabled = toggle.checked;
+}
+
+const timerInterval = setInterval(() => {
+	PARAMS.setTimeSpent(PARAMS.getTimeSpent()+0.01);
+	PARAMS.setTotalTime(PARAMS.getTotalTime()+0.01);
+	updateTimers();
+}, 10);
 
 const buttonRefs = getButtonRefs();
+
+mode = modes[document.getElementById('dropdown').value-1];
 
 if(mode === 'note')
 	initNoteMode();
@@ -220,6 +254,6 @@ else if(mode === 'chord')
 
 const optionRefs = getOptionRefs();
 
-initializeToggles();
+initializeOptions();
 updateCall();
 renderCall();
