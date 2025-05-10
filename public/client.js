@@ -241,6 +241,9 @@ const handleModeChange = () => {
 const handleInversionToggle = () => {
 	const toggle = document.getElementById('inversionToggle');
 	inversionsEnabled = toggle.checked;
+	resetOptions();
+	pickRandomChord(currentNoteIndex);
+	renderCall();
 }
 
 const timerInterval = setInterval(() => {
