@@ -165,6 +165,7 @@ const handleGuess = (guess) => {
 
 				PARAMS.setQuestionsCompleted(PARAMS.getQuestionsCompleted()+1);
 				updateQuestionsCompleted();
+				PARAMS.setTimeSpent(0);
 				
 				if(currentChord.size === currentChordGuess.size && [...currentChord].every(x => currentChordGuess.has(x))) {
 					resetButtons();

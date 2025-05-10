@@ -28,14 +28,6 @@ export const drawNoteHead = (y) => {
 	ctx.ellipse(canvas.width/2, screenY, PARAMS.noteHeadSize, 3 * PARAMS.noteHeadSize / 2, 2 * Math.PI / 6, 0, Math.PI * 2);
 	ctx.fillStyle = '#000';
 	ctx.fill();
-}
-
-export const drawNote = (y) => {
-	const screenY = UTIL.toScreen(y)-3;
-	const screenX = canvas.width/2 + PARAMS.noteHeadSize + 2.5;
-	drawNoteHead(y);
-	ctx.lineWidth = PARAMS.stemThickness;
-	drawLine(screenX, screenY, screenX, screenY-PARAMS.stemHeight);
 
 	if(y <= -6 || y >= 6) { 
 		const parity = y < 0 ? -1 : 1;
@@ -51,9 +43,42 @@ export const drawNote = (y) => {
 	}
 }
 
+export const drawNote = (y) => {
+	drawNoteHead(y);
+	ctx.lineWidth = PARAMS.stemThickness;
+
+	if(y >= 0) {
+		const screenY = UTIL.toScreen(y)-3;
+		const screenX = canvas.width/2 + PARAMS.noteHeadSize + 2.5;
+		drawLine(screenX, screenY, screenX, screenY-PARAMS.stemHeight);
+	}
+	else {
+		const screenY = UTIL.toScreen(y)+5;
+		const screenX = canvas.width/2 - PARAMS.noteHeadSize - 2.5;
+		drawLine(screenX, screenY, screenX, screenY+PARAMS.stemHeight);
+	}
+}
+
 export const drawChord = (notes) => {
 	for(const y of notes) {
-		drawNote(y);
+		drawNoteHead(y);
+	}
+
+	const minY = notes.at(0);
+	const maxY = notes.at(-1);
+	ctx.lineWidth = PARAMS.stemThickness;
+	if(maxY > -2) {
+		const screenX = canvas.width/2 + PARAMS.noteHeadSize + 2.5;
+		const maxScreenY = UTIL.toScreen(maxY)-3;
+		const minScreenY = UTIL.toScreen(minY)-3;
+		drawLine(screenX, minScreenY, screenX, maxScreenY-PARAMS.stemHeight);
+	}
+	else {
+		const screenX = canvas.width/2 - PARAMS.noteHeadSize - 2.5;
+		const maxScreenY = UTIL.toScreen(maxY)+5;
+		const minScreenY = UTIL.toScreen(minY)+5;
+		drawLine(screenX, minScreenY+PARAMS.stemHeight, screenX, maxScreenY);
+
 	}
 }
 
