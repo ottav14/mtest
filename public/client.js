@@ -1,6 +1,6 @@
-import { drawStaff, drawNoteHead, drawNote, drawChord, clearCanvas } from './render.js';
+import { drawStaff, drawNoteHead, drawNote, drawChord, drawKey, clearCanvas } from './render.js';
 import { updateStreak, updateTimers, updateQuestionsCompleted, updateLongestStreak, updateAccuracy } from './optionUpdaters.js';
-import { indexToNote } from './util.js';
+import { indexToNote, keyMap } from './util.js';
 import * as PARAMS from './params.js';
 
 let currentNoteIndex = 0;
@@ -10,11 +10,13 @@ let optionEnabled = [true, true, true, true];
 let currentChord;
 let currentChordIndices;
 let currentChordGuess = new Set();
+let currentKey = 'c';
 let inversionsEnabled = false;
 
 const validNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+const keyModeButtons = ['aFlat', 'bFlat', 'dFlat', 'eFlat', 'fSharp'];
 const optionNames = ['timer', 'streak', 'longestStreak', 'averageTime', 'questionsCompleted', 'accuracy'];
-const modes = ['note', 'chord'];
+const modes = ['note', 'chord', 'key'];
 
 const initializeOptions = () => {
 	for(let i=0; i<optionNames.length; i++) {
@@ -86,11 +88,20 @@ const pickRandomChord = (previous) => {
 	}
 }
 
+const pickRandomKey = () => {
+	const keys = [...Object.keys(keyMap)];
+	const ix = randRange(0, keys.length);
+	currentKey = keys[ix];
+}
+
 const getButtonRefs = () => {
 	const buttonRefs = [];
 	for(const note of validNotes) {
 		buttonRefs.push(document.getElementById(`${note}Button`));
 		buttonRefs.at(-1).addEventListener('click', () => handleGuess(note));
+	}
+	for(const name of keyModeButtons) {
+		document.getElementById(`${name}Button`).addEventListener('click', () => handleGuess(name));
 	}
 	return buttonRefs;
 }
@@ -105,6 +116,13 @@ const getOptionRefs = () => {
 
 const resetButtons = () => {
 	for(const button of buttonRefs) {
+		button.classList.add('btn-secondary');
+		button.classList.remove('btn-primary');
+		button.classList.remove('btn-danger');
+		button.disabled = false;
+	}
+	for(const name of keyModeButtons) {
+		const button = document.getElementById(`${name}Button`);
 		button.classList.add('btn-secondary');
 		button.classList.remove('btn-primary');
 		button.classList.remove('btn-danger');
@@ -186,6 +204,31 @@ const handleGuess = (guess) => {
 
 			button.disabled = true;
 			break;
+		case 'key':
+			if(guess === currentKey) {
+				const currentStreak = PARAMS.getStreak();
+				PARAMS.setStreak(currentStreak+1);
+				if(currentStreak+1 > PARAMS.getLongestStreak())
+					updateLongestStreak();
+
+				PARAMS.setQuestionsCompleted(PARAMS.getQuestionsCompleted()+1);
+				updateQuestionsCompleted();
+				PARAMS.setTimeSpent(0);
+
+				resetButtons();
+				pickRandomKey();
+				updateStreak();
+
+				renderCall();
+			}
+			else {
+				button.classList.add('btn-danger');
+				button.classList.remove('btn-secondary');
+				button.disabled = true;
+
+				PARAMS.setStreak(0);
+			}
+			break;
 	}
 	updateStreak();
 	PARAMS.setGuesses(PARAMS.getGuesses()+1);
@@ -204,22 +247,46 @@ const renderCall = () => {
 	clearCanvas();
 	drawStaff();
 
-	if(mode === 'note')
-		drawNote(currentNoteIndex);
-	else if(mode === 'chord')
-		drawChord(currentChordIndices);
+	switch(mode) {
+		case 'note':
+			drawNote(currentNoteIndex);
+			break;
+		case 'chord':
+			drawChord(currentChordIndices);
+			break;
+		case 'key':
+			drawKey(currentKey);
+			break;
+	}
+}
+
+const toggleKeyModeButtons = () => {
+	for(const name of keyModeButtons) {
+		const button = document.getElementById(`${name}Button`);
+		if(mode === 'key')
+			button.classList.remove('d-none');
+		else
+			button.classList.add('d-none');
+	}
 }
 
 const initNoteMode = () => {
+	toggleKeyModeButtons();
 	currentNoteIndex = pickRandomNote(currentNoteIndex);
 	const inversionToggleContainer = document.getElementById('inversionToggleContainer');
 	inversionToggleContainer.style.display = 'none';
 }
 
 const initChordMode = () => {
+	toggleKeyModeButtons();
 	pickRandomChord(currentNoteIndex);
 	const inversionToggleContainer = document.getElementById('inversionToggleContainer');
 	inversionToggleContainer.style.display = 'block';
+}
+
+const initKeyMode = () => {
+	toggleKeyModeButtons();
+	pickRandomKey();
 }
 
 const handleModeChange = () => {
@@ -231,6 +298,9 @@ const handleModeChange = () => {
 			break;
 		case 'chord':
 			initChordMode();
+			break;
+		case 'key':
+			initKeyMode();
 			break;
 	}
 	renderCall();
@@ -260,10 +330,7 @@ const optionRefs = getOptionRefs();
 
 initializeOptions();
 
-if(mode === 'note')
-	initNoteMode();
-else if(mode === 'chord')
-	initChordMode();
+handleModeChange();
 
 
 updateCall();

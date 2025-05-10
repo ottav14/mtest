@@ -82,6 +82,48 @@ export const drawChord = (notes) => {
 	}
 }
 
+export const drawSharp = (xoff, ix) => {
+	const w = 10;
+	const h = 70;
+	const stagger = 20;
+	const x = canvas.width/2 + xoff;
+	const y = UTIL.toScreen(ix)+3;
+	ctx.lineWidth = 5;
+	drawLine(x-w, y-h, x-w, y+h);
+	drawLine(x+w, y-h-stagger, x+w, y+h-stagger);
+
+	ctx.lineWidth = 8;
+	drawLine(x-w-20, y-15, x+w+20, y-30);
+	drawLine(x-w-20, y+25, x+w+20, y+10);
+
+}
+
+export const drawFlat = (xoff, ix) => {
+	const w = 27;
+	const h = 90;
+	const x = canvas.width/2 + xoff;
+	const y = UTIL.toScreen(ix)+3;
+	ctx.lineWidth = 5;
+	drawLine(x-w, y-h, x-w, y+30);
+
+	ctx.beginPath();
+	ctx.ellipse(x, y, PARAMS.noteHeadSize, 3 * PARAMS.noteHeadSize / 2, 2 * Math.PI / 6, 0, Math.PI * 2);
+	ctx.strokeStyle = '#000';
+	ctx.stroke();
+}
+
+export const drawKey = (key) => {
+	const symbolCount = UTIL.keyMap[key];
+	const spacing = 70;
+	const x0 = spacing * symbolCount/-2;
+	for(let i=0; i<symbolCount; i++) {
+		if(key.endsWith('Flat'))
+			drawFlat(x0 + i*spacing, UTIL.flatPositions[i]);
+		else
+			drawSharp(x0 + i*spacing, UTIL.sharpPositions[i]);
+	}
+}
+
 export const clearCanvas = () => {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
